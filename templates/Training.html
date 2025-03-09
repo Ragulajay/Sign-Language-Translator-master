@@ -65,7 +65,7 @@
     <div class="row">
         <div class="column flex-container">
             <br></br>
-            <div class="mycam">
+            <!-- <div class="mycam">
                 <br><br> <br><br>
                 <br><br> <br><br>
 
@@ -82,11 +82,30 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
+
+
+
+            </div> -->
+            <div class="mycam">
+                <br><br> <br><br>
+                <br><br> <br><br>
+
+                <video autoplay playsinline muted id="webcam" class="cam"></video>
+
+                <div class="grey-bg">
+                    <div class="row text-center">
+                        <h3>Prediction: <span id="predictions"></span></h3>
+                        <h3>Probability : <span id="confidence"></span> %</h3>
+                    </div>
+                </div>
+
+                <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5">Speak <i
                         class="fas fa-microphone ml"></i></button>
-
-
+                <button id='btnSwitch' class="dark btn-lg btn-shadow mb-5">Switch Camera</button>
             </div>
+
+
+
         </div>
 
 
@@ -136,6 +155,37 @@
 
 
     <script>
+
+        let currentStream;
+        let usingFrontCamera = true;
+
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: usingFrontCamera ? 'user' : 'environment'
+                }
+            };
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('webcam');
+                videoElement.srcObject = currentStream;
+            } catch (error) {
+                console.error('Error accessing webcam:', error);
+            }
+        }
+
+        document.getElementById('btnSwitch').addEventListener('click', () => {
+            usingFrontCamera = !usingFrontCamera;
+            startCamera();
+        });
+
+        startCamera();
+        
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
 
