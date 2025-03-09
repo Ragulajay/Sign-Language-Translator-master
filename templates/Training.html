@@ -163,7 +163,7 @@
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById("video").srcObject = stream;
+                document.getElementById("webcam").srcObject = stream;
             } catch (error) {
                 console.error("Error accessing the back camera: ", error);
                 alert("Back camera access failed! Try allowing camera permissions.");
