@@ -157,11 +157,10 @@
 
     <script>
         let videoElement = document.getElementById("webcam");
-        let currentFacingMode = "environment"; // Default to the back camera
 
-        async function startCamera(facingMode) {
+        async function startCamera() {
             const constraints = {
-                video: { facingMode: facingMode }
+                video: { facingMode: "environment" }
             };
             try {
                 let stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -171,18 +170,8 @@
             }
         }
 
-        function switchCamera() {
-            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
-            startCamera(currentFacingMode);
-        }
-
-        // Start switching cameras when the video starts playing
-        videoElement.onplay = function () {
-            setInterval(switchCamera, 5000); // Switch camera every 5 seconds
-        };
-
-        // Start the camera initially
-        startCamera(currentFacingMode);
+        // Start the back camera initially
+        startCamera();
 
 
 
