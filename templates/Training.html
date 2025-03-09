@@ -78,7 +78,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button id="switch">Switch</button>
+                <button id="switch" class="dark btn-lg btn-shadow mb-5">switch</button>
 
 
 
@@ -153,8 +153,6 @@
 
 
     <script>
-
-
         // let videoElement = document.getElementById("webcam");
 
         // async function startCamera() {
@@ -187,118 +185,26 @@
         // }
 
         // startCamera();
+        let currentFacingMode = "environment"; // Start with the back camera
 
-        var identity = 0;
-        var classes = [];
-        var uploadedModel = false;
-        let currentFacingMode = "environment"; // Start with back camera
-        let currentStream = null;
-
-        const startCamera = async () => {
+        async function startCamera() {
             try {
-                if (currentStream) {
-                    currentStream.getTracks().forEach(track => track.stop());
-                }
                 let stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: currentFacingMode }
                 });
                 document.getElementById("webcam").srcObject = stream;
-                currentStream = stream;
             } catch (error) {
                 console.error("Error accessing camera:", error);
                 alert("Camera access denied or not available. Please check browser permission.");
             }
-        };
+        }
 
-        document.getElementById("switchCam").addEventListener("click", () => {
+        document.getElementById("switch").addEventListener("click", () => {
             currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
             startCamera();
         });
 
-        const start = async () => {
-            const trainingCards = document.getElementById("training-cards");
-            const predictions = document.getElementById("predictions");
-            const confidence = document.getElementById("confidence");
-
-            const createKNNClassifier = async () => {
-                return await knnClassifier.create();
-            };
-            const createMobileNetModel = async () => {
-                return await mobilenet.load();
-            };
-            const createWebcamInput = async () => {
-                const webcamElement = document.getElementById('webcam');
-                return await tf.data.webcam(webcamElement);
-            };
-
-            const mobilenetModel = await createMobileNetModel();
-            const knnClassifierModel = await createKNNClassifier();
-            const webcamInput = await createWebcamInput();
-
-            document.getElementById('add-button').addEventListener('click', () => addClass());
-
-            const addClass = () => {
-                let Classname = document.getElementById("inputClassName").value;
-                if (!classes.some(el => el.name === Classname)) {
-                    identity += 1;
-                    classes.push({ id: identity, name: Classname, count: 0 });
-
-                    trainingCards.innerHTML += `
-                <div class="newshifter">
-                    <div class="text-center">
-                        <h3>Class Name: <span>${Classname}</span></h3>
-                        <h3>Images: <span id="images-${identity}">0</span></h3>
-                    </div>
-                    <button class="dark btn-spread btn-shadow mr-5" id="add-${identity}">Add New Images</button>
-                </div>`;
-
-                    document.getElementById(`add-${identity}`).addEventListener('click', () => addDatasetClass(identity));
-                }
-                document.getElementById("inputClassName").value = "";
-            };
-
-            const addDatasetClass = async (classId) => {
-                const img = await webcamInput.capture();
-                const activation = mobilenetModel.infer(img, 'conv_preds');
-                knnClassifierModel.addExample(activation, classId);
-
-                let classIndex = classes.findIndex(el => el.id === classId);
-                classes[classIndex].count += 1;
-                document.getElementById(`images-${classId}`).innerHTML = classes[classIndex].count;
-
-                img.dispose();
-            };
-
-            const classify = async () => {
-                while (true) {
-                    if (knnClassifierModel.getNumClasses() > 0) {
-                        const img = await webcamInput.capture();
-                        const activation = mobilenetModel.infer(img, 'conv_preds');
-                        const result = await knnClassifierModel.predictClass(activation);
-
-                        predictions.innerHTML = classes[result.label - 1]?.name || result.label;
-                        confidence.innerHTML = Math.floor(result.confidences[result.label] * 100);
-
-                        img.dispose();
-                    }
-                    await tf.nextFrame();
-                }
-            };
-
-            document.getElementById("btnSpeak").addEventListener("click", () => {
-                let msg = new SpeechSynthesisUtterance();
-                msg.text = predictions.innerHTML;
-                window.speechSynthesis.speak(msg);
-            });
-
-            await classify();
-        };
-
-        window.onload = () => {
-            startCamera();
-            start();
-        };
-
+        startCamera();
 
 
 
