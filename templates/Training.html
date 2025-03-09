@@ -156,22 +156,36 @@
 
 
     <script>
-        let videoElement = document.getElementById("webcam");
+        // let videoElement = document.getElementById("webcam");
 
+        // async function startCamera() {
+        //     const constraints = {
+        //         video: { facingMode: "environment" }
+        //     };
+        //     try {
+        //         let stream = await navigator.mediaDevices.getUserMedia(constraints);
+        //         videoElement.srcObject = stream;
+        //     } catch (error) {
+        //         console.error("Error accessing camera:", error);
+        //     }
+        // }
+
+        // // Start the back camera initially
+        // startCamera();
         async function startCamera() {
-            const constraints = {
-                video: { facingMode: "environment" }
-            };
             try {
-                let stream = await navigator.mediaDevices.getUserMedia(constraints);
-                videoElement.srcObject = stream;
+                let stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" }  // Use "environment" for back camera
+                });
+                document.getElementById("webcam").srcObject = stream;
             } catch (error) {
                 console.error("Error accessing camera:", error);
+                alert("Camera access denied or not available. Please check browser permission.");
             }
         }
 
-        // Start the back camera initially
         startCamera();
+
 
 
 
