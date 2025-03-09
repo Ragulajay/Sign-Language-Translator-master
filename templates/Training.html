@@ -185,24 +185,36 @@
         // }
 
         // startCamera();
-        let currentFacingMode = "environment"; // Start with the back camera
+        let currentFacingMode = "environment"; // Start with back camera
 
         async function startCamera() {
             try {
-                let stream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: { facingMode: currentFacingMode }
-                });
+                };
+
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
                 document.getElementById("webcam").srcObject = stream;
             } catch (error) {
                 console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permission.");
+                alert("Camera access denied or not available. Please check browser permissions.");
             }
         }
 
-        document.getElementById("switch").addEventListener("click", () => {
-            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+        async function switchCamera() {
+            let devices = await navigator.mediaDevices.enumerateDevices();
+            let videoDevices = devices.filter(device => device.kind === "videoinput");
+
+            if (videoDevices.length > 1) {
+                currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+            } else {
+                alert("Only one camera found. Cannot switch.");
+            }
+
             startCamera();
-        });
+        }
+
+        document.getElementById("switch").addEventListener("click", switchCamera);
 
         startCamera();
 
