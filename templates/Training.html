@@ -166,7 +166,7 @@
 
             const constraints = {
                 video: {
-                    facingMode: usingFrontCamera ? 'user' : 'environment'
+                    facingMode: usingFrontCamera ? { exact: "user" } : { exact: "environment" }
                 }
             };
 
@@ -185,7 +185,7 @@
         });
 
         startCamera();
-        
+
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
 
