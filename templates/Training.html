@@ -82,7 +82,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                
+
 
 
 
@@ -156,7 +156,34 @@
 
 
     <script>
-        
+        let videoElement = document.getElementById("webcam");
+        let currentFacingMode = "environment"; // Default to the back camera
+
+        async function startCamera(facingMode) {
+            const constraints = {
+                video: { facingMode: facingMode }
+            };
+            try {
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+            }
+        }
+
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+            startCamera(currentFacingMode);
+        }
+
+        // Start switching cameras when the video starts playing
+        videoElement.onplay = function () {
+            setInterval(switchCamera, 5000); // Switch camera every 5 seconds
+        };
+
+        // Start the camera initially
+        startCamera(currentFacingMode);
+
 
 
         let mainNav = document.getElementById('js-menu');
