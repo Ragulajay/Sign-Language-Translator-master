@@ -159,29 +159,41 @@
 
 
         let videoStream;
-        let isFrontCamera = true;
+        let currentCameraIndex = 0;
+        let cameraDevices = [];
 
-        async function startCamera(facingMode) {
+        async function getCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            cameraDevices = devices.filter(device => device.kind === 'videoinput');
+            console.log("Available Cameras:", cameraDevices);
+        }
+
+        async function startCamera(deviceId) {
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
             }
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode }
+                    video: { deviceId: { exact: deviceId } }
                 });
-                document.getElementById('webcam').srcObject = videoStream;
+                document.getElementById('video').srcObject = videoStream;
             } catch (error) {
                 console.error("Error accessing camera:", error);
             }
         }
 
-        document.getElementById('switch').addEventListener('click', () => {
-            isFrontCamera = !isFrontCamera;
-            startCamera(isFrontCamera ? 'user' : 'environment');
+        document.getElementById('switch').addEventListener('click', async () => {
+            if (cameraDevices.length === 0) await getCameras();
+            currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
+            startCamera(cameraDevices[currentCameraIndex].deviceId);
         });
 
-        // Start with front camera
-        startCamera('user');
+        (async function init() {
+            await getCameras();
+            if (cameraDevices.length > 0) {
+                startCamera(cameraDevices[0].deviceId);
+            }
+        })();
 
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
