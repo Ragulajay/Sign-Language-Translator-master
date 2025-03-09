@@ -174,7 +174,7 @@
         async function startCamera() {
             try {
                 let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" }  // Use "environment" for back camera
+                    video: { facingMode: "environment" }  // Use "environment" for back camera
                 });
                 document.getElementById("webcam").srcObject = stream;
             } catch (error) {
