@@ -78,7 +78,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button>switch</button>
+                <button id="switch">Switch</button>
 
 
 
@@ -185,36 +185,24 @@
         // }
 
         // startCamera();
-        let currentFacingMode = "environment"; // Start with back camera
+        let currentFacingMode = "environment"; // Start with the back camera
 
         async function startCamera() {
             try {
-                const constraints = {
+                let stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: currentFacingMode }
-                };
-
-                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                });
                 document.getElementById("webcam").srcObject = stream;
             } catch (error) {
                 console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permissions.");
+                alert("Camera access denied or not available. Please check browser permission.");
             }
         }
 
-        async function switchCamera() {
-            let devices = await navigator.mediaDevices.enumerateDevices();
-            let videoDevices = devices.filter(device => device.kind === "videoinput");
-
-            if (videoDevices.length > 1) {
-                currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-            } else {
-                alert("Only one camera found. Cannot switch.");
-            }
-
+        document.getElementById("switch").addEventListener("click", () => {
+            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
             startCamera();
-        }
-
-        document.getElementById("switch").addEventListener("click", switchCamera);
+        });
 
         startCamera();
 
