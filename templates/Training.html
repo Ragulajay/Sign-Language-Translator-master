@@ -153,6 +153,8 @@
 
 
     <script>
+
+
         // let videoElement = document.getElementById("webcam");
 
         // async function startCamera() {
@@ -185,37 +187,83 @@
         // }
 
         // startCamera();
-        let currentFacingMode = "environment"; // Start with the back camera
-        let currentStream = null; // Store the current media stream
+        // Import TensorFlow.js library
+        import * as tf from '@tensorflow/tfjs';
+        import * as knnClassifier from '@tensorflow-models/knn-classifier';
+        import * as mobilenet from '@tensorflow-models/mobilenet';
 
+        let webcamInput;
+        let knnClassifierModel;
+        let mobilenetModel;
+        let currentStream;
+        let currentFacingMode = "user"; // Default to front camera
+        const classes = [{ id: 0, name: 'A', count: 0 }, { id: 1, name: 'B', count: 0 }, { id: 2, name: 'C', count: 0 }];
+
+        // Initialize models and webcam
+        async function init() {
+            knnClassifierModel = knnClassifier.create();
+            mobilenetModel = await mobilenet.load();
+            await startCamera();
+        }
+
+        // Start camera with front/back toggle support
         async function startCamera() {
             try {
-                // Stop any existing stream before starting a new one
                 if (currentStream) {
                     currentStream.getTracks().forEach(track => track.stop());
                 }
-
-                // Request the camera with the selected facing mode
-                let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode }
-                });
-
-                // Set the stream to the video element
+                let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode } });
                 document.getElementById("webcam").srcObject = stream;
-                currentStream = stream; // Save the stream reference
+                currentStream = stream;
+                webcamInput = await tf.data.webcam(document.getElementById('webcam'));
             } catch (error) {
                 console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permission.");
+                alert("Camera access denied. Check browser permissions.");
             }
         }
 
-        document.getElementById("switch").addEventListener("click", () => {
-            // Toggle between front and back cameras
-            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+        // Switch between front and back camera
+        function switchCamera() {
+            currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
             startCamera();
-        });
+        }
 
-        startCamera(); // Start the camera initially
+        // Add training data for sign language recognition
+        async function addDatasetClass(classId) {
+            try {
+                if (!webcamInput) return console.error("Webcam input not initialized");
+                const img = await webcamInput.capture();
+                const activation = mobilenetModel.infer(img, 'conv_preds');
+                knnClassifierModel.addExample(activation, classId);
+                let classIndex = classes.findIndex(el => el.id === classId);
+                classes[classIndex].count += 1;
+                document.getElementById(`images-${classId}`).innerHTML = classes[classIndex].count;
+                img.dispose();
+            } catch (error) {
+                console.error("Error adding dataset:", error);
+            }
+        }
+
+        // Classify input and predict sign
+        async function classify() {
+            if (knnClassifierModel.getNumClasses() === 0) return alert("Please add some training data first!");
+            const img = await webcamInput.capture();
+            const activation = mobilenetModel.infer(img, 'conv_preds');
+            const result = await knnClassifierModel.predictClass(activation);
+            document.getElementById("prediction").innerText = classes[result.label].name;
+            img.dispose();
+        }
+
+        // Event listeners
+        window.onload = () => {
+            init();
+            document.getElementById("switchCam").addEventListener("click", switchCamera);
+            classes.forEach(cls => {
+                document.getElementById(cls.id.toString()).addEventListener("click", () => addDatasetClass(cls.id));
+            });
+            document.getElementById("classify").addEventListener("click", classify);
+        };
+
 
 
 
