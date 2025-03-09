@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Language Translator</title>
+    <title>Sign Language</title>
 
     <script src="https://kit.fontawesome.com/a658a7b479.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/@tensorflow/tfjs"></script>
@@ -172,10 +172,11 @@
 
         // // Start the back camera initially
         // startCamera();
+
         async function startCamera() {
             try {
                 let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" }  // Use "environment" for back camera
+                    video: { facingMode: "environment" }  // Use "environment" for back camera
                 });
                 document.getElementById("webcam").srcObject = stream;
             } catch (error) {
@@ -185,6 +186,7 @@
         }
 
         startCamera();
+        
 
 
 
