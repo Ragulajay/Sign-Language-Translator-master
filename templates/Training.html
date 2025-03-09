@@ -82,7 +82,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button id="switch" onclick="startCamera()">Switch</button>
+                <button id="switch">Switch</button>
 
 
 
@@ -156,32 +156,32 @@
 
 
     <script>
-        let videoElement = document.getElementById('webcam');
-        let isBackCamera = true; // Default to back camera
+        // let videoElement = document.getElementById('webcam');
+        // let isBackCamera = true; // Default to back camera
 
-        async function startCamera() {
-            let constraints = {
-                video: {
-                    facingMode: isBackCamera ? "environment" : "user" // "environment" for back, "user" for front
-                }
-            };
+        // async function startCamera() {
+        //     let constraints = {
+        //         video: {
+        //             facingMode: isBackCamera ? "environment" : "user" // "environment" for back, "user" for front
+        //         }
+        //     };
 
-            try {
-                let stream = await navigator.mediaDevices.getUserMedia(constraints);
-                videoElement.srcObject = stream;
-            } catch (error) {
-                console.error("Error accessing camera: ", error);
-            }
-        }
+        //     try {
+        //         let stream = await navigator.mediaDevices.getUserMedia(constraints);
+        //         videoElement.srcObject = stream;
+        //     } catch (error) {
+        //         console.error("Error accessing camera: ", error);
+        //     }
+        // }
 
-        // Toggle camera
-        document.getElementById('switch').addEventListener('click', function () {
-            isBackCamera = !isBackCamera; // Toggle camera
-            startCamera();
-        });
+        // // Toggle camera
+        // document.getElementById('switch').addEventListener('click', function () {
+        //     isBackCamera = !isBackCamera; // Toggle camera
+        //     startCamera();
+        // });
 
-        // Start with default camera
-        startCamera();
+        // // Start with default camera
+        // startCamera();
 
 
 
