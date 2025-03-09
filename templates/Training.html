@@ -65,7 +65,7 @@
     <div class="row">
         <div class="column flex-container">
             <br></br>
-            <!-- <div class="mycam">
+            <div class="mycam">
                 <br><br> <br><br>
                 <br><br> <br><br>
 
@@ -82,11 +82,12 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
+                <button id="switch">Switch Camera</button>
 
 
 
-            </div> -->
-            <div class="mycam">
+            </div>
+            <!-- <div class="mycam">
                 <br><br> <br><br>
                 <br><br> <br><br>
 
@@ -102,7 +103,7 @@
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5">Speak <i
                         class="fas fa-microphone ml"></i></button>
                 <button id='btnSwitch' class="dark btn-lg btn-shadow mb-5">Switch Camera</button>
-            </div>
+            </div> -->
 
 
 
@@ -156,45 +157,31 @@
 
     <script>
 
-        let currentStream;
-        let videoElement = document.getElementById('webcam');
-        let usingFrontCamera = true;
-        let cameraDevices = [];
 
-        async function getCameraDevices() {
-            let devices = await navigator.mediaDevices.enumerateDevices();
-            cameraDevices = devices.filter(device => device.kind === "videoinput");
-        }
+        let videoStream;
+        let isFrontCamera = true;
 
-        async function startCamera(deviceId = null) {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
+        async function startCamera(facingMode) {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
             }
-
-            let constraints = {
-                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: usingFrontCamera ? "user" : "environment" }
-            };
-
             try {
-                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                videoElement.srcObject = currentStream;
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facingMode }
+                });
+                document.getElementById('webcam').srcObject = videoStream;
             } catch (error) {
                 console.error("Error accessing camera:", error);
             }
         }
 
-        document.getElementById('btnSwitch').addEventListener('click', async () => {
-            await getCameraDevices();
-            if (cameraDevices.length > 1) {
-                usingFrontCamera = !usingFrontCamera;
-                let deviceId = cameraDevices[usingFrontCamera ? 0 : 1].deviceId;
-                startCamera(deviceId);
-            } else {
-                console.error("No back camera found!");
-            }
+        document.getElementById('switch').addEventListener('click', () => {
+            isFrontCamera = !isFrontCamera;
+            startCamera(isFrontCamera ? 'user' : 'environment');
         });
 
-        getCameraDevices().then(() => startCamera());
+        // Start with front camera
+        startCamera('user');
 
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
