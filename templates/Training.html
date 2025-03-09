@@ -156,8 +156,35 @@
 
 
     <script>
+        let videoElement = document.getElementById('webcam');
+        let isBackCamera = true; // Default to back camera
 
-       
+        async function startCamera() {
+            let constraints = {
+                video: {
+                    facingMode: isBackCamera ? "environment" : "user" // "environment" for back, "user" for front
+                }
+            };
+
+            try {
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera: ", error);
+            }
+        }
+
+        // Toggle camera
+        document.getElementById('switch').addEventListener('click', function () {
+            isBackCamera = !isBackCamera; // Toggle camera
+            startCamera();
+        });
+
+        // Start with default camera
+        startCamera();
+
+
+
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
 
