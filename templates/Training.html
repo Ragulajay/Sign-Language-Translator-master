@@ -82,7 +82,8 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button id="switch">Switch Camera</button>
+
+                <button onclick="switchCamera()">Switch Camera</button>
 
 
 
@@ -157,39 +158,28 @@
 
     <script>
 
-        let currentStream;
-        let usingFrontCamera = true;
+        let videoElement = document.getElementById("webcam");
+        let currentFacingMode = "environment"; // Default: front camera
 
-        function startCamera() {
+        async function startCamera(facingMode) {
             const constraints = {
-                video: { facingMode: usingFrontCamera ? 'environment' : 'user' }
+                video: { facingMode: facingMode }
             };
-
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(function (stream) {
-                    let videoElement = document.getElementById("webcam");
-                    if (videoElement) {
-                        if (currentStream) {
-                            currentStream.getTracks().forEach(track => track.stop());
-                        }
-                        currentStream = stream;
-                        videoElement.srcObject = stream;
-                    } else {
-                        alert("Video element not found!");
-                    }
-                })
-                .catch(function (error) {
-                    console.error("Error accessing camera: ", error);
-                    alert("Camera access denied. Please enable it in your browser settings.");
-                });
+            try {
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+            }
         }
 
-        document.getElementById("proceedButton").addEventListener("click", startCamera);
-        document.getElementById("switch").addEventListener("click", function () {
-            usingFrontCamera = !usingFrontCamera;
-            startCamera();
-        });
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+            startCamera(currentFacingMode);
+        }
 
+        // Start with the front camera
+        startCamera(currentFacingMode);
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
 
