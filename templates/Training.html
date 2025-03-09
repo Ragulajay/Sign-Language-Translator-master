@@ -70,7 +70,8 @@
                 <br><br> <br><br>
 
 
-                <video autoplay playsinline id="webcam" class="cam"></video>
+                <!-- <video autoplay playsinline id="webcam" class="cam"></video> -->
+                <video id="video" class="videoTrain" src='' muted autoplay playsinline></video>
 
                 <div class="grey-bg">
                     <div class="row text-center">
@@ -82,7 +83,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button id="switch">Switch</button>
+                <button onclick="switchCamera()" id="switch">Switch</button>
 
 
 
@@ -156,27 +157,28 @@
 
 
     <script>
-        const video = document.getElementById('webcam');
+        let videoElement = document.getElementById("video");
+        let currentFacingMode = "environment"; // Default: front camera
 
-        // Access the device's camera
-        navigator.mediaDevices.enumerateDevices().then(devices => {
-            const backCamera = devices.find(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
-            if (backCamera) {
-                // Request the back camera stream
-                navigator.mediaDevices.getUserMedia({
-                    video: { deviceId: backCamera.deviceId }
-                })
-                    .then(stream => {
-                        video.srcObject = stream;
-                    })
-                    .catch(err => {
-                        console.error('Error accessing back camera:', err);
-                    });
-            } else {
-                console.log('No back camera found');
+        async function startCamera(facingMode) {
+            const constraints = {
+                video: { facingMode: facingMode }
+            };
+            try {
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera:", error);
             }
-        });
+        }
 
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+            startCamera(currentFacingMode);
+        }
+
+        // Start with the front camera
+        startCamera(currentFacingMode);
 
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
