@@ -185,38 +185,37 @@
         // }
 
         // startCamera();
-        let currentFacingMode = "environment"; // Start with back camera
+        let currentFacingMode = "environment"; // Start with the back camera
+        let currentStream = null; // Store the current media stream
 
         async function startCamera() {
             try {
-                const constraints = {
-                    video: { facingMode: currentFacingMode }
-                };
+                // Stop any existing stream before starting a new one
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
 
-                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Request the camera with the selected facing mode
+                let stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode }
+                });
+
+                // Set the stream to the video element
                 document.getElementById("webcam").srcObject = stream;
+                currentStream = stream; // Save the stream reference
             } catch (error) {
                 console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permissions.");
+                alert("Camera access denied or not available. Please check browser permission.");
             }
         }
 
-        async function switchCamera() {
-            let devices = await navigator.mediaDevices.enumerateDevices();
-            let videoDevices = devices.filter(device => device.kind === "videoinput");
-
-            if (videoDevices.length > 1) {
-                currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-            } else {
-                alert("Only one camera found. Cannot switch.");
-            }
-
+        document.getElementById("switch").addEventListener("click", () => {
+            // Toggle between front and back cameras
+            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
             startCamera();
-        }
+        });
 
-        document.getElementById("switch").addEventListener("click", switchCamera);
-
-        startCamera();
+        startCamera(); // Start the camera initially
 
 
 
