@@ -157,34 +157,44 @@
     <script>
 
         let currentStream;
+        let videoElement = document.getElementById('webcam');
         let usingFrontCamera = true;
+        let cameraDevices = [];
 
-        async function startCamera() {
+        async function getCameraDevices() {
+            let devices = await navigator.mediaDevices.enumerateDevices();
+            cameraDevices = devices.filter(device => device.kind === "videoinput");
+        }
+
+        async function startCamera(deviceId = null) {
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            const constraints = {
-                video: {
-                    facingMode: usingFrontCamera ? { exact: "user" } : { exact: "environment" }
-                }
+            let constraints = {
+                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: usingFrontCamera ? "user" : "environment" }
             };
 
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                const videoElement = document.getElementById('webcam');
                 videoElement.srcObject = currentStream;
             } catch (error) {
-                console.error('Error accessing webcam:', error);
+                console.error("Error accessing camera:", error);
             }
         }
 
-        document.getElementById('btnSwitch').addEventListener('click', () => {
-            usingFrontCamera = !usingFrontCamera;
-            startCamera();
+        document.getElementById('btnSwitch').addEventListener('click', async () => {
+            await getCameraDevices();
+            if (cameraDevices.length > 1) {
+                usingFrontCamera = !usingFrontCamera;
+                let deviceId = cameraDevices[usingFrontCamera ? 0 : 1].deviceId;
+                startCamera(deviceId);
+            } else {
+                console.error("No back camera found!");
+            }
         });
 
-        startCamera();
+        getCameraDevices().then(() => startCamera());
 
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
