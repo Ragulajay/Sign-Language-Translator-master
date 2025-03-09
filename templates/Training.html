@@ -157,43 +157,38 @@
 
     <script>
 
+        let currentStream;
+        let usingFrontCamera = true;
 
-        let videoStream;
-        let currentCameraIndex = 0;
-        let cameraDevices = [];
+        function startCamera() {
+            const constraints = {
+                video: { facingMode: usingFrontCamera ? 'user' : 'environment' }
+            };
 
-        async function getCameras() {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            cameraDevices = devices.filter(device => device.kind === 'videoinput');
-            console.log("Available Cameras:", cameraDevices);
-        }
-
-        async function startCamera(deviceId) {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-            }
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { deviceId: { exact: deviceId } }
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function (stream) {
+                    let videoElement = document.getElementById("video");
+                    if (videoElement) {
+                        if (currentStream) {
+                            currentStream.getTracks().forEach(track => track.stop());
+                        }
+                        currentStream = stream;
+                        videoElement.srcObject = stream;
+                    } else {
+                        alert("Video element not found!");
+                    }
+                })
+                .catch(function (error) {
+                    console.error("Error accessing camera: ", error);
+                    alert("Camera access denied. Please enable it in your browser settings.");
                 });
-                document.getElementById('video').srcObject = videoStream;
-            } catch (error) {
-                console.error("Error accessing camera:", error);
-            }
         }
 
-        document.getElementById('switch').addEventListener('click', async () => {
-            if (cameraDevices.length === 0) await getCameras();
-            currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
-            startCamera(cameraDevices[currentCameraIndex].deviceId);
+        document.getElementById("proceedButton").addEventListener("click", startCamera);
+        document.getElementById("switch").addEventListener("click", function () {
+            usingFrontCamera = !usingFrontCamera;
+            startCamera();
         });
-
-        (async function init() {
-            await getCameras();
-            if (cameraDevices.length > 0) {
-                startCamera(cameraDevices[0].deviceId);
-            }
-        })();
 
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
