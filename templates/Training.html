@@ -158,19 +158,19 @@
     <script>
         async function startBackCamera() {
             const constraints = {
-                video: { facingMode: { exact: "environment" } }  // Force back camera
+                video: { facingMode: "environment" }  // Try back camera
             };
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 document.getElementById("webcam").srcObject = stream;
             } catch (error) {
-                console.error("Error accessing the back camera: ", error);
-                alert("Back camera access failed! Try allowing camera permissions.");
+                console.error("Error accessing back camera:", error);
+                alert("Camera access failed! Try enabling permissions and using Chrome/Safari.");
             }
         }
 
-        // Start the back camera as soon as the page loads
+        // Start camera on page load
         window.onload = startBackCamera;
 
 
