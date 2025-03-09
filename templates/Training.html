@@ -157,20 +157,25 @@
 
     <script>
         async function startBackCamera() {
-            const constraints = {
-                video: { facingMode: "environment" }  // Try back camera
-            };
-
             try {
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById("webcam").srcObject = stream;
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const backCamera = devices.find(device => device.kind === "videoinput" && device.label.toLowerCase().includes("back"));
+
+                if (backCamera) {
+                    const constraints = { video: { deviceId: { exact: backCamera.deviceId } } };
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    document.getElementById("video").srcObject = stream;
+                } else {
+                    alert("No back camera found! Using default camera.");
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById("webcam").srcObject = stream;
+                }
             } catch (error) {
                 console.error("Error accessing back camera:", error);
                 alert("Camera access failed! Try enabling permissions and using Chrome/Safari.");
             }
         }
 
-        // Start camera on page load
         window.onload = startBackCamera;
 
 
