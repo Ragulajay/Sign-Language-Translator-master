@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Translator</title>
+
+    <script src="https://kit.fontawesome.com/a658a7b479.js" crossorigin="anonymous"></script>
+
+    <link rel="icon" type="image/png" href="../docs/logo.png">
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .sign-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .sign {
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            width: 100px;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <span class="navbar-toggle" id="js-navbar-toggle">
+            <button class="togglebtn" onClick={this.buttonclicked}> <i class="fas fa-bars"></i></button>
+        </span>
+        <h5><a href="../index.html" class="logo">Sign Language <span>Translator</span></a></h5>
+        <ul class="main-nav" id="js-menu">
+            <!-- <li>
+                <a href="../index.html" class="nav-links ">Tutorials</a>
+            </li> -->
+            <li>
+                <a href="./Training.html" class="nav-links">Training</a>
+            </li>
+
+            <li>
+                <a href="Model.html" class="nav-links">Dictionary</a>
+            </li>
+
+            <li>
+                <a href="./About.html" class="nav-links orange" style="color: #ff9900;">About</a>
+            </li>
+
+        </ul>
+    </nav>
+    <div class="container">
+        <h2>Sign Language Dictionary</h2>
+        <input type="text" id="search" placeholder="Search for a word..." onkeyup="filterSigns()">
+        <div class="sign-container" id="signs">
+            <div class="sign" data-word="whats-up">
+                <img src="../static/ISL_Gifs/82-whats-up.gif" alt="whats-up">
+                <p>whats-up</p>
+            </div>
+            <div class="sign" data-word="hello">
+                <img src="../static/ISL_Gifs/29-hello.gif" alt="hello">
+                <p>hello</p>
+            </div>
+            <div class="sign" data-word="good-morning">
+                <img src="../static/ISL_Gifs/26-good-morning.gif" alt="good-morning">
+                <p>good-morning</p>
+            </div>
+            <div class="sign" data-word="any-questions">
+                <img src="../static/ISL_Gifs/3-any-questions.gif" alt="any-questions">
+                <p>any-questions</p>
+            </div>
+            <div class="sign" data-word="all">
+                <img src="../static/ISL_Gifs/2-all.gif" alt="all">
+                <p>all</p>
+            </div>
+            <div class="sign" data-word="are-you-angry">
+                <img src="../static/ISL_Gifs/4-are-you-angry.gif" alt="are-you-angry">
+                <p>are-you-angry</p>
+            </div>
+            <div class="sign" data-word="shall-I-help-you">
+                <img src="../static/ISL_Gifs/62-shall-I-help-you.gif" alt="shall-I-help-you">
+                <p>shall-I-help-you</p>
+            </div>
+            <div class="sign" data-word="tomato">
+                <img src="../static/ISL_Gifs/73-tomato.gif" alt="tomato">
+                <p>tomato</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mainNav = document.getElementById('js-menu');
+        let navBarToggle = document.getElementById('js-navbar-toggle');
+
+        navBarToggle.addEventListener('click', function () {
+            mainNav.classList.toggle('active');
+        });
+        function filterSigns() {
+            let input = document.getElementById('search').value.toLowerCase();
+            let signs = document.querySelectorAll('.sign');
+
+            signs.forEach(sign => {
+                let word = sign.getAttribute('data-word');
+                if (word.includes(input)) {
+                    sign.style.display = 'block';
+                } else {
+                    sign.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
