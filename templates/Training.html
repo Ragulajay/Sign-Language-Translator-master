@@ -1,10 +1,14 @@
+<!-- 
+    For training your own sign language model, with custom dataset. 
+ -->
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Language</title>
+    <title>Sign Language Translator</title>
 
     <script src="https://kit.fontawesome.com/a658a7b479.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/@tensorflow/tfjs"></script>
@@ -29,15 +33,16 @@
         </span>
         <h5><a href="../index.html" class="logo">Sign Language <span>Translator</span></a></h5>
         <ul class="main-nav" id="js-menu">
-            <!-- <li>
-                <a href="../index.html" class="nav-links">Tutorials</a>
-            </li> -->
+            <li>
+                <a href="./speech.html" class="nav-links">SpeechRecognition</a>
+            </li>
+
             <li>
                 <a href="./Training.html" class="nav-links orange">Training</a>
             </li>
 
             <li>
-                <a href="Model.html" class="nav-links">Dictionary</a>
+                <a href="./Model.html" class="nav-links">Dictionary</a>
             </li>
 
             <li>
@@ -49,9 +54,7 @@
 
 
     <div class="alert alert-success">
-        Please train atleast 30 images for each class and,for more information
-        <a href="#" style="color: green;">click
-            here </a>
+        Please train atleast 30 images for each class
     </div>
 
 
@@ -71,8 +74,21 @@
                 <div class="grey-bg">
                     <div class="row text-center">
                         <h3>Prediction: <span id="predictions"></span></h3>
-                        <h3>Probability : <span id="confidence"></span> %</h3>
+
+                        <h3 style="display: none;">Probability : <span id="confidence"></span> %</h3>
                     </div>
+                    <div style="margin-top: 20px;">
+                        <h3>Stored Words:</h3>
+                        <div id="storedWordsBox" style="padding: 10px; border: 1px solid #ccc; min-height: 40px;"></div>
+
+                        <button onclick="clearStoredWords()" class="dark btn-lg btn-shadow mt-2">Clear</button>
+                        <button onclick="copyStoredWords()" class="dark btn-lg btn-shadow mt-2 ml-2">Copy</button>
+                    </div>
+
+
+
+
+
 
                 </div>
 
@@ -80,30 +96,7 @@
                         class="fas fa-microphone ml"></i></button>
                 <button id="switch" class="dark btn-lg btn-shadow mb-5">switch</button>
 
-
-
-
             </div>
-            <!-- <div class="mycam">
-                <br><br> <br><br>
-                <br><br> <br><br>
-
-                <video autoplay playsinline muted id="webcam" class="cam"></video>
-
-                <div class="grey-bg">
-                    <div class="row text-center">
-                        <h3>Prediction: <span id="predictions"></span></h3>
-                        <h3>Probability : <span id="confidence"></span> %</h3>
-                    </div>
-                </div>
-
-                <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5">Speak <i
-                        class="fas fa-microphone ml"></i></button>
-                <button id='btnSwitch' class="dark btn-lg btn-shadow mb-5">Switch Camera</button>
-            </div> -->
-
-
-
         </div>
 
 
@@ -133,16 +126,16 @@
                 <div id="training-cards">
 
                     <!-- <div class=" newshifter">
-                        <div class="text-center">
-                            <h3>Class Name : <span>How are you?</span></h3>
-                            <h3>Images : <span>50</span></h3>
-                        </div>
-                        <div>
-                            <button class="dark btn-spread btn-shadow mr-5">Add New Images <i
-                                    class="fas fa-plus fa-1x"></i>
-                            </button>
-                        </div>
-                    </div> -->
+                         <div class="text-center">
+                             <h3>Class Name : <span>How are you?</span></h3>
+                             <h3>Images : <span>50</span></h3>
+                         </div>
+                         <div>
+                             <button class="dark btn-spread btn-shadow mr-5">Add New Images <i
+                                     class="fas fa-plus fa-1x"></i>
+                             </button>
+                         </div>
+                     </div> -->
                 </div>
 
 
@@ -153,60 +146,39 @@
 
 
     <script>
-        // let videoElement = document.getElementById("webcam");
+        const predictionElement = document.getElementById("predictions");
+        const storedWordsDiv = document.getElementById("storedWords");
+        let storedText = [];
+        let lastStored = "  ";
 
-        // async function startCamera() {
-        //     const constraints = {
-        //         video: { facingMode: "environment" }
-        //     };
-        //     try {
-        //         let stream = await navigator.mediaDevices.getUserMedia(constraints);
-        //         videoElement.srcObject = stream;
-        //     } catch (error) {
-        //         console.error("Error accessing camera:", error);
-        //     }
-        // }
-
-        // // Start the back camera initially
-        // startCamera();
-
-        ///////
-
-        // async function startCamera() {
-        //     try {
-        //         let stream = await navigator.mediaDevices.getUserMedia({
-        //             video: { facingMode: "environment" }  // Use "environment" for back camera
-        //         });
-        //         document.getElementById("webcam").srcObject = stream;
-        //     } catch (error) {
-        //         console.error("Error accessing camera:", error);
-        //         alert("Camera access denied or not available. Please check browser permission.");
-        //     }
-        // }
-
-        // startCamera();
-        let currentFacingMode = "environment"; // Start with the back camera
-
-        async function startCamera() {
-            try {
-                let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode }
-                });
-                document.getElementById("webcam").srcObject = stream;
-            } catch (error) {
-                console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permission.");
+        function updateStoredWordsDisplay(storedText) {
+            const wordBox = document.getElementById("storedWordsBox");
+            if (wordBox) {
+                wordBox.innerText = storedText.join(" ");
             }
         }
 
-        document.getElementById("switch").addEventListener("click", () => {
-            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-            startCamera();
-        });
+        function copyStoredWords() {
+            const wordBox = document.getElementById("storedWordsBox");
+            const textToCopy = wordBox.innerText;
 
-        startCamera();
+            if (textToCopy.trim() !== "") {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert("Copied to clipboard!");
+                }).catch(err => {
+                    console.error("Copy failed: ", err);
+                    alert("Failed to copy!");
+                });
+            } else {
+                alert("No words to copy.");
+            }
+        }
 
 
+        function clearStoredWords() {
+            storedText = [];
+            document.getElementById("storedWordsBox").innerText = "";
+        }
 
 
 

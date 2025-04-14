@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login & Registration</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        .form input {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            background-color: #5c6bc0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #3f51b5;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #form-toggle button {
+            width: 50%;
+            background-color: #ddd;
+            color: black;
+            border-radius: 0;
+        }
+
+        #form-toggle button:hover {
+            background-color: #ccc;
+        }
+
+        p {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="form-toggle">
+            <button onclick="showLogin()">Login</button>
+            <button onclick="showRegister()">Register</button>
+        </div>
+
+        <form id="login-form" class="form" onsubmit="return login(event)">
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Username" required />
+            <input type="password" id="login-password" placeholder="Password" required />
+            <button type="submit">Login</button>
+            <p id="login-msg"></p>
+        </form>
+
+        <form id="register-form" class="form hidden" onsubmit="return register(event)">
+            <h2>Register</h2>
+            <input type="text" id="reg-username" placeholder="Username" required />
+            <input type="password" id="reg-password" placeholder="Password" required />
+            <input type="email" id="reg-mail" placeholder="mail id" required />
+            <input type="number" id="reg-mbl" placeholder="Mobile number" required />
+            <button type="submit">Register</button>
+            <p id="register-msg"></p>
+        </form>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('register-form').classList.remove('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+        }
+
+        function register(event) {
+            event.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+
+            if (localStorage.getItem(username)) {
+                document.getElementById('register-msg').textContent = "User already exists!";
+            } else {
+                localStorage.setItem(username, password);
+                document.getElementById('register-msg').textContent = "Registered successfully!";
+                showLogin();
+            }
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const storedPassword = localStorage.getItem(username);
+            if (storedPassword === password) {
+                document.getElementById('login-msg').style.color = "green";
+                document.getElementById('login-msg').textContent = "Login successful!";
+
+                // Store session
+                localStorage.setItem('loggedInUser', username);
+
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1000);
+            } else {
+                document.getElementById('login-msg').textContent = "Invalid username or password!";
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

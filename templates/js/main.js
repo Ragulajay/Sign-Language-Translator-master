@@ -7,20 +7,20 @@ var uploadedModel = false;
 console.log("Training Page: For training your custom sign langauge model");
 
 
-const start = async() => {
+const start = async () => {
     const trainingCards = document.getElementById("training-cards")
     const predictions = document.getElementById("predictions")
     const confidence = document.getElementById("confidence")
 
-    const createKNNClassifier = async() => {
+    const createKNNClassifier = async () => {
         console.log('Loading KNN Classifier');
         return await knnClassifier.create();
     };
-    const createMobileNetModel = async() => {
+    const createMobileNetModel = async () => {
         console.log('Loading Mobilenet Model');
         return await mobilenet.load();
     };
-    const createWebcamInput = async() => {
+    const createWebcamInput = async () => {
         console.log('Loading Webcam Input');
         const webcamElement = await document.getElementById('webcam');
         return await tf.data.webcam(webcamElement);
@@ -63,7 +63,7 @@ const start = async() => {
         document.getElementById('add-button').addEventListener('click', () => addClass(inputClassName));
         // document.getElementById('btnSpeak').addEventListener('click', () => speak());
         document.getElementById('load_button').addEventListener('change', (event) => uploadModel(knnClassifierModel, event));
-        document.getElementById('save_button').addEventListener('click', async() => downloadModel(knnClassifierModel));
+        document.getElementById('save_button').addEventListener('click', async () => downloadModel(knnClassifierModel));
 
 
     };
@@ -89,20 +89,22 @@ const start = async() => {
     };
 
 
-    const uploadModel = async(classifierModel, event) => {
+    const uploadModel = async (classifierModel, event) => {
         uploadedModel = true;
         let inputModel = event.target.files;
         console.log("Uploading");
         let fr = new FileReader();
         if (inputModel.length > 0) {
-            fr.onload = async() => {
+            fr.onload = async () => {
                 var dataset = fr.result;
                 var tensorObj = JSON.parse(dataset);
 
                 Object.keys(tensorObj).forEach((key) => {
                     tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 1024, 1024]);
-                    classes.push(key);
+                    identity += 1;
+                    classes.push({ id: identity, name: key, count: 0 });
                 });
+
                 classifierModel.setClassifierDataset(tensorObj);
                 console.log("Classifier has been set up! Congrats! ");
             };
@@ -112,19 +114,20 @@ const start = async() => {
         //    console.log(classes)
     };
 
-    const downloadModel = async(classifierModel) => {
+
+
+    const downloadModel = async (classifierModel) => {
         saveClassifier(classifierModel);
     };
 
 
 
-    const addDatasetClass = async(classId) => {
+    const addDatasetClass = async (classId) => {
 
         // Capture an image from the web camera.
         const img = await webcamInput.capture();
 
-        // Get the intermediate activation of MobileNet 'conv_preds' and pass that
-        // to the KNN classifier.
+
         const activation = mobilenetModel.infer(img, 'conv_preds');
 
         // Pass the intermediate activation to the classifier.
@@ -144,39 +147,168 @@ const start = async() => {
 
 
 
-    const imageClassificationWithTransferLearningOnWebcam = async() => {
+    // const imageClassificationWithTransferLearningOnWebcam = async() => {
+    //     console.log("Machine Learning on the web is ready");
+    //     while (true) {
+    //         if (knnClassifierModel.getNumClasses() > 0) {
+    //             const img = await webcamInput.capture();
+
+    //             // Get the activation from mobilenet from the webcam.
+    //             const activation = mobilenetModel.infer(img, 'conv_preds');
+    //             // Get the most likely class and confidences from the classifier module.
+    //             const result = await knnClassifierModel.predictClass(activation);
+
+    //             if (uploadedModel) {
+    //                 predictions.innerHTML = result.label
+    //                 confidence.innerHTML = Math.floor(result.confidences[result.label] * 100)
+
+    //             } else {
+
+    //                 try {
+    //                     predictions.innerHTML = classes[result.label - 1].name
+    //                     confidence.innerHTML = Math.floor(result.confidences[result.label] * 100)
+    //                 } catch (err) {
+    //                     predictions.innerHTML = result.label - 1
+    //                     confidence.innerHTML = Math.floor(result.confidences[result.label] * 100)
+    //                 }
+    //             }
+
+
+    //             // Dispose the tensor to release the memory.
+    //             img.dispose();
+    //         }
+    //         await tf.nextFrame();
+    //     }
+    // };
+
+    // const imageClassificationWithTransferLearningOnWebcam = async () => {
+    //     console.log("Machine Learning on the web is ready");
+
+    //     while (true) {
+    //         if (knnClassifierModel.getNumClasses() > 0) {
+    //             const img = await webcamInput.capture();
+    //             const activation = mobilenetModel.infer(img, 'conv_preds');
+    //             const result = await knnClassifierModel.predictClass(activation);
+    /////////////////////////////////////////////////////////old////////////////////////
+
+    // let confidenceThreshold = 0.1; // Adjust this to improve accuracy
+    // let bestConfidence = Math.max(...Object.values(result.confidences)); // Get highest confidence score
+
+    // if (bestConfidence < confidenceThreshold) {
+    //     // If confidence is too low, classify as "Unknown Sign"
+    //     predictions.innerHTML = "Unknown Sign";
+    //     confidence.innerHTML = Math.floor(bestConfidence * 100);
+    // } else {
+    //     // Only classify if confidence is high
+    //     if (uploadedModel) {
+    //         predictions.innerHTML = result.label;
+    //         confidence.innerHTML = Math.floor(bestConfidence * 100);
+    //     } else {
+    //         try {
+    //             predictions.innerHTML = classes[result.label - 1].name;
+    //             confidence.innerHTML = Math.floor(bestConfidence * 100);
+    //         } catch (err) {
+    //             predictions.innerHTML = "Unknown Sign"; // Fallback for errors
+    //             confidence.innerHTML = Math.floor(bestConfidence * 100);
+    //         }
+    //     }
+    // }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //             let confidenceThreshold = 0.9; // You can tune this (0.5 = 50% confidence)
+    //             let bestConfidence = Math.max(...Object.values(result.confidences));
+
+    //             if (bestConfidence < confidenceThreshold) {
+    //                 predictions.innerHTML = "Not Detected";
+    //                 confidence.innerHTML = Math.floor(bestConfidence * 100);
+    //             } else {
+    //                 try {
+    //                     let labelName;
+    //                     if (uploadedModel) {
+    //                         labelName = result.label;
+    //                     } else {
+    //                         const classItem = classes.find(c => c.id === parseInt(result.label));
+    //                         labelName = classItem ? classItem.name : "Not Detected";
+    //                     }
+
+    //                     predictions.innerHTML = labelName;
+    //                     confidence.innerHTML = Math.floor(bestConfidence * 100);
+    //                 } catch (err) {
+    //                     predictions.innerHTML = "Not Detected";
+    //                     confidence.innerHTML = Math.floor(bestConfidence * 100);
+    //                 }
+    //             }
+
+
+    //             img.dispose(); // Free memory
+    //         }
+    //         await tf.nextFrame();
+    //     }
+    // };
+
+    const imageClassificationWithTransferLearningOnWebcam = async () => {
         console.log("Machine Learning on the web is ready");
+        let lastSpoken = "";
+        let storedText = [];
+
         while (true) {
             if (knnClassifierModel.getNumClasses() > 0) {
                 const img = await webcamInput.capture();
-
-                // Get the activation from mobilenet from the webcam.
                 const activation = mobilenetModel.infer(img, 'conv_preds');
-                // Get the most likely class and confidences from the classifier module.
                 const result = await knnClassifierModel.predictClass(activation);
+                let confidenceThreshold = 1.0;
+                let bestConfidence = Math.max(...Object.values(result.confidences));
+                let labelName = "Not Found";
 
-                if (uploadedModel) {
-                    predictions.innerHTML = result.label
-                    confidence.innerHTML = Math.floor(result.confidences[result.label] * 100)
-
-                } else {
-
+                if (bestConfidence >= confidenceThreshold) {
                     try {
-                        predictions.innerHTML = classes[result.label - 1].name
-                        confidence.innerHTML = Math.floor(result.confidences[result.label] * 100)
+                        if (uploadedModel) {
+                            labelName = result.label;
+
+                        } else {
+                            const classItem = classes.find(c => c.id === parseInt(result.label));
+                            labelName = classItem ? classItem.name : "Not Found";
+                        }
                     } catch (err) {
-                        predictions.innerHTML = result.label - 1
-                        confidence.innerHTML = Math.floor(result.confidences[result.label] * 100)
+                        labelName = "Not Found";
                     }
                 }
 
+                predictions.innerHTML = labelName;
+                confidence.innerHTML = Math.floor(bestConfidence * 100);
 
-                // Dispose the tensor to release the memory.
+                const isTrainedClass = classes.some(c => c.name === labelName);
+
+                // ✅ Speak every label, including "Not Detected", if different from last spoken
+                if (labelName !== lastSpoken) {
+                    let msg = new SpeechSynthesisUtterance(labelName);
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(msg);
+
+                    msg.onend = () => {
+                        if (
+                            labelName !== "Unknown Sign" &&
+                            isTrainedClass &&
+                            storedText[storedText.length - 1] !== labelName
+                        ) {
+                            storedText.push(labelName);
+                            updateStoredWordsDisplay(storedText);
+                        }
+                    };
+
+                    lastSpoken = labelName;
+                }
+
                 img.dispose();
             }
+
             await tf.nextFrame();
         }
     };
+
+
+
+
 
 
     var btnSpeak = document.querySelector('#btnSpeak');
