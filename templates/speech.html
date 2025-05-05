@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Language Translator</title>
@@ -13,54 +12,98 @@
     <link rel="stylesheet" type="text/css" href="../static/style.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-
-            background-image: url(./gi.gif);
-            background-position: center;
-            background-size: cover;
-            background-repeat: no-repeat;
-
-
-
+            font-family: 'Times New Roman', Times, serif;
+            background: #f1efe2;
+            /* old newspaper background */
+            margin: 0;
+            padding: 40px 20px;
+            color: #222;
         }
 
-        textarea {
-            width: 80%;
-            height: 100px;
-            margin: 20px 0;
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto 30px;
+        }
+
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .camera-container {
+            width: 300px;
+            height: 200px;
+            background: #000;
+            border: 2px solid #555;
+            flex-shrink: 0;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .text-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
+            padding: 8px 16px;
+            font-size: 1rem;
+            font-family: 'Times New Roman', Times, serif;
+            background: #fff;
+            color: #222;
+            border: 1px solid #555;
             cursor: pointer;
+            transition: background 0.3s;
         }
 
-        #speechResult {
-            height: 150px;
+        button:hover {
+            background: #ddd;
         }
 
-        .carousel-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-        }
-
-        .video-wrapper video {
-            width: 500px;
-            height: 300px;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-        }
-
-        .sp {
-            margin-top: 21px;
+        .text-output {
+            background: #fcf8e3;
+            padding: 30px;
+            border: 1px solid #ccc;
+            color: #222;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+            column-count: 2;
+            column-gap: 50px;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 850px;
         }
     </style>
+
+
 </head>
 
 <body>
@@ -91,115 +134,158 @@
         </ul>
     </nav>
 
+    <h1>Speech Recognition</h1>
 
-
-    <!-- Video Container -->
-    <!-- <h2>Video Carousel</h2>
-    <div class="carousel-container">
-        <button onclick="prevVideo()">⏮️</button>
-        <div class="video-wrapper">
-            <video id="carouselVideo" src="video1.mp4" controls autoplay muted></video>
-        </div>
-        <button onclick="nextVideo()">⏭️</button>
-    </div> -->
-
-
-    <!-- Speech to Text -->
-    <div class="sp">
-        <h1>Speech to Text & Text to Speech</h1>
-        <div>
-            <textarea id="speechResult" placeholder="Your speech will appear here..." readonly></textarea>
-            <br>
-            <button onclick="startSpeechToText()">▶️ Start</button>
-            <button onclick="stopSpeechToText()">⏹ Stop</button>
-            <button onclick="clearText()">🧹 Clear</button>
+    <div class="main-content">
+        <div class="camera-container">
+            <video id="video" autoplay muted playsinline></video>
         </div>
 
-        <!-- Text to Speech -->
-        <div>
-            <textarea id="textToSpeak" placeholder="Type text to speak..."></textarea>
-            <br>
-            <button onclick="clearTextt()">🧹 Clear</button>
-            <button onclick="speakText()">🔊 Speak Text</button>
+        <div class="text-section">
+            <div class="controls">
+                <button id="startBtn">Start Recognition</button>
+                <button id="copyBtn">Copy Text</button>
+                <button id="speakBtn">Speak Text</button>
+                <button id="printBtn">Print Text</button>
+            </div>
+
+            <div class="text-output" id="textOutput"></div>
         </div>
     </div>
+
     <script>
-        let recognition;
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const speakBtn = document.getElementById('speakBtn');
+        const textOutput = document.getElementById('textOutput');
 
-        function initializeRecognition() {
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'en-US';
-            recognition.continuous = true;
-            recognition.interimResults = false;
+        // Start camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error('Camera access error:', err);
+            });
 
-            recognition.onresult = function (event) {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript + ' ';
+        const awarenessText = `Hello, welcome to DOOR INDIA.
+
+People from different countries and India are frightened, worried, and suffering because of the Coronavirus. Day by day, the death rate is increasing across the world, as the virus is highly dangerous and strong.
+
+I will give you a short explanation on how this virus spreads from person to person, and how we can protect ourselves from being affected.
+
+The virus spreads through saliva — while speaking, coughing, or sneezing. Earlier, we could stand close to one another, but now we must maintain distance. Why? Because standing too close can allow the virus to travel from one person to another.
+
+A minimum of 1-meter distance must be maintained at all times. Whether you're with a friend, at a shop, or with a neighbor — do not stand too close. Keeping this distance helps prevent the virus from spreading, and protects your life.
+
+Now, why should we cover our nose and mouth? When we cough or sneeze, it's essential to cover our face using our elbow or a cloth. If we don't, the discharges from our mouth and nose can spread to others and harm them. Therefore, use a mask, or your elbow or a cloth while coughing or sneezing — to protect others as well.
+
+Wash your hands frequently. It's very important. Don't wash your hands with water alone — use hand sanitizer, soap, or any disinfectant. There are many germs on our hands, and washing for at least 20 seconds helps remove them. Be responsible — it’s vital for your own safety and others too.
+
+Avoid touching things unnecessarily. When we go out to buy something, we touch trolleys, handrails, products, and many other surfaces. A person infected with the virus may have already touched them, and you may not realize it. The discharges from their nose or mouth may be on these surfaces.
+
+Later, if you touch your eyes, nose, or mouth with those same hands, the virus can easily enter your body. So, avoid touching things unnecessarily — and if you do, wash your hands properly with soap.
+
+Why do we wear a mask? Germs are everywhere. When an infected person sneezes, the germs spread around. If you don’t wear a mask, it’s easy for you to get infected. That’s why wearing a mask is one of the most important ways to protect yourself.
+
+So, how can we be careful? Use a mask to prevent the virus from reaching you. I hope you've understood the explanation — please follow all these safety measures, and kindly stay at home.
+
+Thank you for watching.`;
+
+
+        function typeTextByWordAndSpeakLineByLine(text, speed = 150) {
+            const lines = text.split('\n').filter(line => line.trim() !== ''); // Split by new lines
+            textOutput.innerHTML = '';
+            startBtn.disabled = true;
+
+            let currentLine = 0;
+            let currentWords = [];
+            let wordIndex = 0;
+
+            function speakLine(line) {
+                const utterance = new SpeechSynthesisUtterance(line.trim());
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }
+
+            function typeNextWord() {
+                if (wordIndex < currentWords.length) {
+                    textOutput.innerHTML += currentWords[wordIndex] + ' ';
+                    wordIndex++;
+                    setTimeout(typeNextWord, speed);
+                } else {
+                    speakLine(currentWords.join(' '));
+                    currentLine++;
+                    if (currentLine < lines.length) {
+                        textOutput.innerHTML += '\n\n';
+                        currentWords = lines[currentLine].trim().split(' ');
+                        wordIndex = 0;
+                        setTimeout(typeNextWord, speed);
+                    } else {
+                        startBtn.disabled = false;
+                        alert('Recognition Completed');
                     }
                 }
-                const currentText = document.getElementById('speechResult').value;
-                document.getElementById('speechResult').value = currentText + finalTranscript;
-            };
-
-            recognition.onerror = function (event) {
-                console.error('Speech recognition error:', event.error);
-            };
-        }
-
-        function startSpeechToText() {
-            if (!recognition) {
-                initializeRecognition();
             }
-            recognition.start();
+
+            setTimeout(() => {
+                currentWords = lines[currentLine].trim().split(' ');
+                typeNextWord();
+            }, 10000); // 10-second delay
         }
 
-        function stopSpeechToText() {
-            if (recognition) {
-                recognition.stop();
-            }
-        }
+        startBtn.addEventListener('click', () => {
+            typeTextByWordAndSpeakLineByLine(awarenessText, 350);  //type delay word by word
+        });
 
-        function clearText() {
-            document.getElementById('speechResult').value = '';
-        }
-        function clearTextt() {
-            document.getElementById('textToSpeak').value = '';
-        }
 
-        function speakText() {
-            const text = document.getElementById('textToSpeak').value;
-            const utterance = new SpeechSynthesisUtterance(text);
-            speechSynthesis.speak(utterance);
-        }
 
-        let videoIndex = 0;
-        const videoSources = [
-            'video1.mp4',
-            'video2.mp4',
-            'video3.mp4',
-            'video4.mp4',
-            'video5.mp4'
-        ];
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(textOutput.textContent)
+                .then(() => alert('Text copied to clipboard!'))
+                .catch(err => alert('Failed to copy text: ' + err));
+        });
 
-        const carouselVideo = document.getElementById('carouselVideo');
+        speakBtn.addEventListener('click', () => {
+            const utterance = new SpeechSynthesisUtterance(textOutput.textContent);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        });
 
-        function showVideo(index) {
-            carouselVideo.src = videoSources[index];
-            carouselVideo.load();
-            carouselVideo.play();
-        }
 
-        function nextVideo() {
-            videoIndex = (videoIndex + 1) % videoSources.length;
-            showVideo(videoIndex);
-        }
 
-        function prevVideo() {
-            videoIndex = (videoIndex - 1 + videoSources.length) % videoSources.length;
-            showVideo(videoIndex);
-        }
+        const printBtn = document.getElementById('printBtn');
+
+        printBtn.addEventListener('click', () => {
+            const printWindow = window.open('', '', 'width=900,height=700');
+            printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Text</title>
+                <style>
+                    body {
+                        font-family: 'Georgia', 'Times New Roman', serif;
+                        padding: 40px;
+                        background: #f5f1e3;
+                        color: #222;
+                        font-size: 1.2rem;
+                        line-height: 1.8;
+                        text-align: justify;
+                    }
+                </style>
+            </head>
+            <body>
+                ${textOutput.innerHTML}
+            </body>
+        </html>
+    `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        });
+
         let mainNav = document.getElementById('js-menu');
         let navBarToggle = document.getElementById('js-navbar-toggle');
 
