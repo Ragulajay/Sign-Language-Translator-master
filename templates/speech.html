@@ -101,6 +101,41 @@
             width: 100%;
             max-width: 850px;
         }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .camera-container {
+                width: 90%;
+                max-width: 400px;
+                height: auto;
+                aspect-ratio: 4/3;
+            }
+
+            .text-section {
+                width: 100%;
+                align-items: center;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+                max-width: 400px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .text-output {
+                column-count: 1;
+                padding: 20px;
+            }
+        }
     </style>
 
 
