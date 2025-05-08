@@ -178,7 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
-                <button id="switch" class="dark btn-lg btn-shadow mb-5">switch</button>
+                <button onclick="switchCamera()">Switch Camera</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -333,26 +333,70 @@ Thank you for watching.`;
 
 
         //camera switch
-        let currentFacingMode = "environment"; // Start with the back camera
+        let videoDevices = [];
+        let currentIndex = 0;
+        let currentStream;
 
-        async function startCamera() {
+        async function getCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+            if (videoDevices.length === 0) {
+                alert("No cameras found");
+            }
+
+            console.log("Available Cameras:");
+            videoDevices.forEach((device, index) => {
+                console.log(`${index}: ${device.label || "Camera " + (index + 1)} (${device.deviceId})`);
+            });
+        }
+
+        async function startCamera(deviceId = null, facingMode = null) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            let constraints;
+            if (deviceId) {
+                constraints = { video: { deviceId: { exact: deviceId } }, audio: false };
+            } else if (facingMode) {
+                constraints = { video: { facingMode }, audio: false };
+            } else {
+                constraints = { video: true, audio: false };
+            }ஃ
+
             try {
-                let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode }
-                });
-                document.getElementById("webcam").srcObject = stream;
-            } catch (error) {
-                console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permission.");
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById("video").srcObject = currentStream;
+                console.log("Started camera with constraints:", constraints);
+            } catch (err) {
+                alert("Camera error: " + err.message);
+                console.error("Camera error:", err);
             }
         }
 
-        document.getElementById("switch").addEventListener("click", () => {
-            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-            startCamera();
-        });
+        async function switchCamera() {
+            if (videoDevices.length < 2) {
+                alert("Only one camera detected. Trying to use back camera with facingMode.");
+                await startCamera(null, "environment"); // fallback
+                return;
+            }
 
-        startCamera();
+            currentIndex = (currentIndex + 1) % videoDevices.length;
+            const deviceId = videoDevices[currentIndex].deviceId;
+            await startCamera(deviceId);
+        }
+
+        // Initialize
+        (async () => {
+            await getCameras();
+            if (videoDevices.length > 0) {
+                await startCamera(videoDevices[currentIndex].deviceId);
+            } else {
+                await startCamera(null, "user"); // fallback if deviceId fails
+            }
+        })();
+
 
 
 
