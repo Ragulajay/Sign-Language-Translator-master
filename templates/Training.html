@@ -94,7 +94,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button id="switch" class="dark btn-lg btn-shadow mb-5">switch</button>
+                <button  onclick="switchCamera()"  class="dark btn-lg btn-shadow mb-5"  >switch</button>
 
             </div>
         </div>
@@ -180,6 +180,48 @@
             document.getElementById("storedWordsBox").innerText = "";
         }
 
+
+        //camera switch
+        let currentStream;
+        let videoDevices = [];
+        let currentIndex = 0;
+
+        async function getCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+        }
+
+        async function startCamera(deviceId) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: { exact: deviceId } },
+                    audio: false
+                });
+                document.getElementById("video").srcObject = currentStream;
+            } catch (err) {
+                alert("Camera error: " + err.message);
+                console.error(err);
+            }
+        }
+
+        async function switchCamera() {
+            currentIndex = (currentIndex + 1) % videoDevices.length;
+            await startCamera(videoDevices[currentIndex].deviceId);
+        }
+
+        // Initialize
+        (async () => {
+            await getCameras();
+            if (videoDevices.length === 0) {
+                alert("No camera found");
+                return;
+            }
+            await startCamera(videoDevices[currentIndex].deviceId);
+        })();
 
 
 
