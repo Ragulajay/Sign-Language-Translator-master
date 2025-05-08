@@ -178,7 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
-                <button id="switch" class="dark btn-lg btn-shadow mb-5">switch</button>
+                <button onclick="switchCamera()">Switch Camera</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -333,26 +333,46 @@ Thank you for watching.`;
 
 
         //camera switch
-        let currentFacingMode = "user"; // Start with the back camera
+        let currentStream;
+        let videoDevices = [];
+        let currentIndex = 0;
 
-        async function startCamera() {
+        async function getCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+        }
+
+        async function startCamera(deviceId) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
             try {
-                let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode }
+                currentStream = await navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: { exact: deviceId } },
+                    audio: false
                 });
-                document.getElementById("webcam").srcObject = stream;
-            } catch (error) {
-                console.error("Error accessing camera:", error);
-                alert("Camera access denied or not available. Please check browser permission.");
+                document.getElementById("video").srcObject = currentStream;
+            } catch (err) {
+                alert("Camera error: " + err.message);
+                console.error(err);
             }
         }
 
-        document.getElementById("switch").addEventListener("click", () => {
-            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
-            startCamera();
-        });
+        async function switchCamera() {
+            currentIndex = (currentIndex + 1) % videoDevices.length;
+            await startCamera(videoDevices[currentIndex].deviceId);
+        }
 
-        startCamera();
+        // Initialize
+        (async () => {
+            await getCameras();
+            if (videoDevices.length === 0) {
+                alert("No camera found");
+                return;
+            }
+            await startCamera(videoDevices[currentIndex].deviceId);
+        })();
 
 
 
