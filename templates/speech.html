@@ -178,7 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
-                <button onclick="switchCamera()">Switch camer</button>
+                <button onclick="switchCamera()">Switch Camera</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -363,11 +363,11 @@ Thank you for watching.`;
                 constraints = { video: { facingMode }, audio: false };
             } else {
                 constraints = { video: true, audio: false };
-            }
+            } ஃ
 
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById("webcam").srcObject = currentStream;
+                document.getElementById("video").srcObject = currentStream;
                 console.log("Started camera with constraints:", constraints);
             } catch (err) {
                 alert("Camera error: " + err.message);
@@ -396,7 +396,6 @@ Thank you for watching.`;
                 await startCamera(null, "user"); // fallback if deviceId fails
             }
         })();
-
 
 
 
