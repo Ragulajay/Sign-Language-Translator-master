@@ -178,6 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
+                <button id="switchBtn">Switch Camera</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -327,6 +328,60 @@ Thank you for watching.`;
         navBarToggle.addEventListener('click', function () {
             mainNav.classList.toggle('active');
         });
+
+
+
+
+        //camera switch
+        const video = document.getElementById('video');
+        const switchBtn = document.getElementById('switchBtn');
+
+        let currentStream = null;
+        let currentDeviceId = null;
+        let videoDevices = [];
+        let currentDeviceIndex = 0;
+
+        // Get available video input devices
+        async function getVideoDevices() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+        }
+
+        // Start camera
+        async function startCamera(deviceId = null) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user' },
+                audio: false
+            };
+
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = currentStream;
+
+            const videoTrack = currentStream.getVideoTracks()[0];
+            currentDeviceId = videoTrack.getSettings().deviceId;
+        }
+
+        // Switch camera
+        async function switchCamera() {
+            if (videoDevices.length < 2) return;
+
+            currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+            const nextDeviceId = videoDevices[currentDeviceIndex].deviceId;
+            await startCamera(nextDeviceId);
+        }
+
+        // Initialize
+        (async () => {
+            await getVideoDevices();
+            await startCamera();
+        })();
+
+        switchBtn.addEventListener('click', switchCamera);
+
 
     </script>
 </body>
