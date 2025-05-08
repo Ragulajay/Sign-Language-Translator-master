@@ -178,7 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
-                <button onclick="switchCamera()">Switch Camera</button>
+                <button id="switch" class="dark btn-lg btn-shadow mb-5">switch</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -333,37 +333,27 @@ Thank you for watching.`;
 
 
         //camera switch
-        let useFrontCamera = true;
-        let currentStream;
+        let currentFacingMode = "environment"; // Start with the back camera
 
         async function startCamera() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-
-            const constraints = {
-                video: {
-                    facingMode: useFrontCamera ? "user" : "environment"
-                },
-                audio: false
-            };
-
             try {
-                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById("video").srcObject = currentStream;
-            } catch (err) {
-                alert("Error accessing camera: " + err.message);
-                console.error(err);
+                let stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode }
+                });
+                document.getElementById("webcam").srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+                alert("Camera access denied or not available. Please check browser permission.");
             }
         }
 
-        function switchCamera() {
-            useFrontCamera = !useFrontCamera;
+        document.getElementById("switch").addEventListener("click", () => {
+            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
             startCamera();
-        }
+        });
 
-        // Start with front camera
         startCamera();
+
 
 
     </script>
