@@ -178,7 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
-                <button id="switchBtn">Switch Camera</button>
+                <button onclick="startCamera()">Start Camera</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -333,54 +333,17 @@ Thank you for watching.`;
 
 
         //camera switch
-        const video = document.getElementById('video');
-        const switchBtn = document.getElementById('switchBtn');
-
-        let currentStream = null;
-        let currentDeviceId = null;
-        let videoDevices = [];
-        let currentDeviceIndex = 0;
-
-        // Get available video input devices
-        async function getVideoDevices() {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            videoDevices = devices.filter(device => device.kind === 'videoinput');
-        }
-
-        // Start camera
-        async function startCamera(deviceId = null) {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' }, audio: false
+                });
+                document.getElementById('video').srcObject = stream;
+            } catch (err) {
+                alert('Camera error: ' + err.message);
+                console.error(err);
             }
-
-            const constraints = {
-                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user' },
-                audio: false
-            };
-
-            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = currentStream;
-
-            const videoTrack = currentStream.getVideoTracks()[0];
-            currentDeviceId = videoTrack.getSettings().deviceId;
         }
-
-        // Switch camera
-        async function switchCamera() {
-            if (videoDevices.length < 2) return;
-
-            currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
-            const nextDeviceId = videoDevices[currentDeviceIndex].deviceId;
-            await startCamera(nextDeviceId);
-        }
-
-        // Initialize
-        (async () => {
-            await getVideoDevices();
-            await startCamera();
-        })();
-
-        switchBtn.addEventListener('click', switchCamera);
 
 
     </script>
