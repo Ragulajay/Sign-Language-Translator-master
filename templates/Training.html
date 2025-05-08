@@ -94,7 +94,7 @@
 
                 <button id='btnSpeak' class="dark btn-lg btn-shadow mb-5" id="speak">Speak <i
                         class="fas fa-microphone ml"></i></button>
-                <button  onclick="switchCamera()"  class="dark btn-lg btn-shadow mb-5"  >switch</button>
+                <button onclick="switchCamera()" class="dark btn-lg btn-shadow mb-5">switch c</button>
 
             </div>
         </div>
@@ -182,46 +182,70 @@
 
 
         //camera switch
-        let currentStream;
         let videoDevices = [];
         let currentIndex = 0;
+        let currentStream;
 
         async function getCameras() {
             const devices = await navigator.mediaDevices.enumerateDevices();
             videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+            if (videoDevices.length === 0) {
+                alert("No cameras found");
+            }
+
+            console.log("Available Cameras:");
+            videoDevices.forEach((device, index) => {
+                console.log(`${index}: ${device.label || "Camera " + (index + 1)} (${device.deviceId})`);
+            });
         }
 
-        async function startCamera(deviceId) {
+        async function startCamera(deviceId = null, facingMode = null) {
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
+            let constraints;
+            if (deviceId) {
+                constraints = { video: { deviceId: { exact: deviceId } }, audio: false };
+            } else if (facingMode) {
+                constraints = { video: { facingMode }, audio: false };
+            } else {
+                constraints = { video: true, audio: false };
+            }
+
             try {
-                currentStream = await navigator.mediaDevices.getUserMedia({
-                    video: { deviceId: { exact: deviceId } },
-                    audio: false
-                });
-                document.getElementById("video").srcObject = currentStream;
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById("webcam").srcObject = currentStream;
+                console.log("Started camera with constraints:", constraints);
             } catch (err) {
                 alert("Camera error: " + err.message);
-                console.error(err);
+                console.error("Camera error:", err);
             }
         }
 
         async function switchCamera() {
+            if (videoDevices.length < 2) {
+                alert("Only one camera detected. Trying to use back camera with facingMode.");
+                await startCamera(null, "environment"); // fallback
+                return;
+            }
+
             currentIndex = (currentIndex + 1) % videoDevices.length;
-            await startCamera(videoDevices[currentIndex].deviceId);
+            const deviceId = videoDevices[currentIndex].deviceId;
+            await startCamera(deviceId);
         }
 
         // Initialize
         (async () => {
             await getCameras();
-            if (videoDevices.length === 0) {
-                alert("No camera found");
-                return;
+            if (videoDevices.length > 0) {
+                await startCamera(videoDevices[currentIndex].deviceId);
+            } else {
+                await startCamera(null, "user"); // fallback if deviceId fails
             }
-            await startCamera(videoDevices[currentIndex].deviceId);
         })();
+
 
 
 
