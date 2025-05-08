@@ -333,7 +333,7 @@ Thank you for watching.`;
 
 
         //camera switch
-        let currentFacingMode = "environment"; // Start with the back camera
+        let currentFacingMode = "user"; // Start with the back camera
 
         async function startCamera() {
             try {
@@ -348,7 +348,7 @@ Thank you for watching.`;
         }
 
         document.getElementById("switch").addEventListener("click", () => {
-            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
             startCamera();
         });
 
