@@ -69,7 +69,7 @@
                 <br><br> <br><br>
 
 
-                <video autoplay playsinline muted id="webcam" id="video" class="cam"></video>
+                <video autoplay playsinline muted id="webcam" class="cam"></video>
 
                 <div class="grey-bg">
                     <div class="row text-center">
@@ -216,7 +216,7 @@
 
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById("video").srcObject = currentStream;
+                document.getElementById("webcam").srcObject = currentStream;
                 console.log("Started camera with constraints:", constraints);
             } catch (err) {
                 alert("Camera error: " + err.message);
