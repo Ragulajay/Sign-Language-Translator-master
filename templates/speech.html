@@ -334,12 +334,76 @@ Thank you for watching.`;
             printWindow.close();
         });
 
-        
 
 
 
 
-        //camera switch
+
+        // //camera switch
+        // let videoDevices = [];
+        // let currentIndex = 0;
+        // let currentStream;
+
+        // async function getCameras() {
+        //     const devices = await navigator.mediaDevices.enumerateDevices();
+        //     videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+        //     if (videoDevices.length === 0) {
+        //         alert("No cameras found");
+        //     }
+
+        //     console.log("Available Cameras:");
+        //     videoDevices.forEach((device, index) => {
+        //         console.log(`${index}: ${device.label || "Camera " + (index + 1)} (${device.deviceId})`);
+        //     });
+        // }
+
+        // async function startCamera(deviceId = null, facingMode = null) {
+        //     if (currentStream) {
+        //         currentStream.getTracks().forEach(track => track.stop());
+        //     }
+
+        //     let constraints;
+        //     if (deviceId) {
+        //         constraints = { video: { deviceId: { exact: deviceId } }, audio: false };
+        //     } else if (facingMode) {
+        //         constraints = { video: { facingMode }, audio: false };
+        //     } else {
+        //         constraints = { video: true, audio: false };
+        //     } ஃ
+
+        //     try {
+        //         currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        //         document.getElementById("video").srcObject = currentStream;
+        //         console.log("Started camera with constraints:", constraints);
+        //     } catch (err) {
+        //         alert("Camera error: " + err.message);
+        //         console.error("Camera error:", err);
+        //     }
+        // }
+
+        // async function switchCamera() {
+        //     if (videoDevices.length < 2) {
+        //         alert("Only one camera detected. Trying to use back camera with facingMode.");
+        //         await startCamera(null, "environment"); // fallback
+        //         return;
+        //     }
+
+        //     currentIndex = (currentIndex + 1) % videoDevices.length;
+        //     const deviceId = videoDevices[currentIndex].deviceId;
+        //     await startCamera(deviceId);
+        // }
+
+        // // Initialize
+        // (async () => {
+        //     await getCameras();
+        //     if (videoDevices.length > 0) {
+        //         await startCamera(videoDevices[currentIndex].deviceId);
+        //     } else {
+        //         await startCamera(null, "user"); // fallback if deviceId fails
+        //     }
+        // })();
+
         let videoDevices = [];
         let currentIndex = 0;
         let currentStream;
@@ -363,29 +427,33 @@ Thank you for watching.`;
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            let constraints;
+            let constraints = {
+                video: {}
+            };
+
             if (deviceId) {
-                constraints = { video: { deviceId: { exact: deviceId } }, audio: false };
+                constraints.video.deviceId = { exact: deviceId };
             } else if (facingMode) {
-                constraints = { video: { facingMode }, audio: false };
+                constraints.video.facingMode = { exact: facingMode };
             } else {
-                constraints = { video: true, audio: false };
-            } ஃ
+                constraints.video = true;
+            }
 
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById("video").srcObject = currentStream;
+                video.srcObject = currentStream;
                 console.log("Started camera with constraints:", constraints);
             } catch (err) {
-                alert("Camera error: " + err.message);
                 console.error("Camera error:", err);
+                alert("Camera error: " + err.message);
             }
         }
 
         async function switchCamera() {
+            await getCameras(); // Refresh camera list
             if (videoDevices.length < 2) {
-                alert("Only one camera detected. Trying to use back camera with facingMode.");
-                await startCamera(null, "environment"); // fallback
+                alert("Only one camera detected. Trying back camera via facingMode.");
+                await startCamera(null, "environment");
                 return;
             }
 
@@ -394,15 +462,16 @@ Thank you for watching.`;
             await startCamera(deviceId);
         }
 
-        // Initialize
+        // Initialize on page load
         (async () => {
             await getCameras();
             if (videoDevices.length > 0) {
                 await startCamera(videoDevices[currentIndex].deviceId);
             } else {
-                await startCamera(null, "user"); // fallback if deviceId fails
+                await startCamera(null, "user");
             }
         })();
+
 
 
 
