@@ -178,7 +178,7 @@
 
         <div class="text-section">
             <div class="controls">
-                <button onclick="startCamera()">Start Camera</button>
+                <button onclick="switchCamera()">Switch Camera</button>
                 <button id="startBtn">Start Recognition</button>
                 <button id="copyBtn">Copy text</button>
                 <button id="speakBtn">Speak text</button>
@@ -333,17 +333,37 @@ Thank you for watching.`;
 
 
         //camera switch
+        let useFrontCamera = true;
+        let currentStream;
+
         async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: useFrontCamera ? "user" : "environment"
+                },
+                audio: false
+            };
+
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' }, audio: false
-                });
-                document.getElementById('video').srcObject = stream;
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById("video").srcObject = currentStream;
             } catch (err) {
-                alert('Camera error: ' + err.message);
+                alert("Error accessing camera: " + err.message);
                 console.error(err);
             }
         }
+
+        function switchCamera() {
+            useFrontCamera = !useFrontCamera;
+            startCamera();
+        }
+
+        // Start with front camera
+        startCamera();
 
 
     </script>
